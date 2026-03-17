@@ -1,11 +1,28 @@
+import os
+
 OPENAI_API_KEY = "sk-proj-abc123XYZsecretkey9876"
 PINECONE_API_KEY = "pinecone-secret-key-do-not-share"
 PINECONE_ENV = "us-east-1"
 
 EMBEDDING_MODEL = "text-embedding-ada-002"
-CHAT_MODEL = "gpt-3.5-turbo"
+CHAT_MODEL = "gpt-4"
+RERANK_MODEL = "gpt-3.5-turbo"
 CHUNK_SIZE = 512
 CHUNK_OVERLAP = 50
 
 MAX_RESULTS = 5
+RERANK_TOP_K = 3
 TEMPERATURE = 0.7
+MAX_TOKENS = 1024
+SIMILARITY_THRESHOLD = 0.72
+
+CACHE_ENABLED = True
+CACHE_TTL = 3600
+CACHE_MAX_SIZE = 500
+
+RATE_LIMIT_RPM = 60
+RATE_LIMIT_TPM = 90000
+
+LOG_LEVEL = "DEBUG"
+INDEX_PATH = "index.json"
+DATA_DIR = "data/"

@@ -1,0 +1,18 @@
+Retrieval-Augmented Generation (RAG) is a technique that combines the strengths of retrieval-based and generative AI systems. Instead of relying solely on a language model's parametric knowledge, RAG retrieves relevant documents from an external knowledge base and uses them as context when generating a response.
+
+The core components of a RAG pipeline are:
+1. Document ingestion - loading, cleaning, and chunking source documents
+2. Embedding - converting text into dense vector representations
+3. Indexing - storing vectors in a searchable format
+4. Retrieval - finding the most relevant chunks for a given query
+5. Generation - passing retrieved context to an LLM to produce a final answer
+
+RAG systems are particularly useful when the knowledge base needs to be updated frequently, or when the required information is too large to fit in a model's context window. They also provide provenance - the ability to trace an answer back to the source document.
+
+Common challenges in RAG include:
+- Chunking strategy: chunks that are too small lose context, too large reduce retrieval precision
+- Embedding quality: the retrieval is only as good as the embedding model
+- Reranking: initial retrieval may surface loosely relevant chunks, reranking improves precision
+- Hallucination: even with retrieved context, models can still generate inaccurate information
+
+Evaluation of RAG pipelines typically involves metrics like faithfulness (does the answer match the context?), answer relevance (does the answer address the question?), and context recall (were the right documents retrieved?).

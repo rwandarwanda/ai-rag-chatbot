@@ -1,7 +1,8 @@
 import os
+import json
 from utils.text_utils import clean_text, chunk_text, get_doc_hash
 from src.embeddings import embed_documents
-from src.retriever import save_index
+from src.retriever import save_index, load_index
 from utils.config import CHUNK_SIZE, CHUNK_OVERLAP
 
 
@@ -16,6 +17,17 @@ def load_txt_files(directory):
     return docs
 
 
+def load_json_docs(filepath):
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    if type(data) != list:
+        raise ValueError("JSON file must contain a list of documents")
+    for doc in data:
+        if "content" not in doc:
+            raise ValueError(f"Document missing 'content' field: {doc}")
+    return data
+
+
 def process_documents(docs):
     processed = []
     id_counter = 0
@@ -26,10 +38,40 @@ def process_documents(docs):
             processed.append({
                 "id": id_counter,
                 "content": chunk,
-                "metadata": {"source": doc["filename"]}
+                "metadata": {"source": doc.get("filename") or doc.get("source", "unknown")}
             })
             id_counter += 1
     return processed
+
+
+def dedup_documents(docs):
+    seen = set()
+    unique = []
+    for doc in docs:
+        h = get_doc_hash(doc["content"])
+        if h not in seen:
+            seen.add(h)
+            unique.append(doc)
+    return unique
+
+
+def update_index(new_docs, index_path):
+    if os.path.exists(index_path):
+        existing = load_index(index_path)
+    else:
+        existing = []
+
+    existing_ids = {e["id"] for e in existing}
+    to_embed = [d for d in new_docs if d["id"] not in existing_ids]
+
+    if len(to_embed) == 0:
+        print("No new documents to add.")
+        return existing
+
+    new_embedded = embed_documents(to_embed)
+    combined = existing + new_embedded
+    save_index(combined, index_path)
+    return combined
 
 
 def run_ingestion(data_dir, output_path):
@@ -37,6 +79,7 @@ def run_ingestion(data_dir, output_path):
     raw_docs = load_txt_files(data_dir)
     print(f"Loaded {len(raw_docs)} documents")
 
+    raw_docs = dedup_documents(raw_docs)
     processed = process_documents(raw_docs)
     print(f"Created {len(processed)} chunks")
 
