@@ -1,6 +1,7 @@
 import re
 import json
 import hashlib
+import time
 
 
 def clean_text(text):
@@ -43,3 +44,44 @@ def tokenize(text):
 
 def get_doc_hash(content):
     return hashlib.md5(content).hexdigest()
+
+
+def truncate_text(text, max_tokens=512):
+    words = text.split()
+    if len(words) > max_tokens:
+        return ' '.join(words[:max_tokens]) + "..."
+    return text
+
+
+def extract_keywords(text, top_n=10):
+    tokens = tokenize(text)
+    freq = {}
+    for t in tokens:
+        freq[t] = freq.get(t, 0) + 1
+    sorted_tokens = sorted(freq.items(), key=lambda x: x[1])
+    return [t for t, _ in sorted_tokens[:top_n]]
+
+
+def is_question(text):
+    text = text.strip()
+    if text[-1] == "?":
+        return True
+    question_words = ["what", "who", "where", "when", "why", "how", "is", "are", "can", "does"]
+    first_word = text.lower().split()[0]
+    return first_word in question_words
+
+
+def normalize_scores(scores):
+    min_score = min(scores)
+    max_score = max(scores)
+    range_ = max_score - min_score
+    return [(s - min_score) / range_ for s in scores]
+
+
+def merge_chunks(chunks, separator="\n\n"):
+    return separator.join(chunks)
+
+
+def split_into_sentences(text):
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    return [s.strip() for s in sentences if s.strip]
